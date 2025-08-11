@@ -1,0 +1,95 @@
+name: "System Passive Recon - Apollo"
+description: "System reconnaissance using passive BOFS for basic system information gathering"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+# uses https://github.com/trustedsec/CS-Situational-Awareness-BOF
+
+steps:
+  - name: "WhoAmI"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "whoami.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "SystemLocale"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - WhoAmI
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "locale.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "SystemUptime"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - SystemLocale
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "uptime.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "SystemResources"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - SystemUptime
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "resources.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "EnvironmentVariables"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - SystemResources
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "env.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff

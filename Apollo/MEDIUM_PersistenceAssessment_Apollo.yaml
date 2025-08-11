@@ -1,0 +1,77 @@
+name: "Persistence Assessment - Apollo"
+description: "Assess existing persistence mechanisms without creating new ones"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+steps:
+  - name: "Query Scheduled Tasks"
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree"}'
+  
+  - name: "Current Privileges Assessment"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Query Scheduled Tasks    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: whoami
+      
+  - name: "Query Current Services"
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Current Privileges Assessment
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: sc
+      params: '{"query": true, "computer": "", "service": "", "display_name": ""}'
+      
+  - name: "Query Run Registry Key"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Query Current Services
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"}'
+      
+  - name: "Query RunOnce Registry Key"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Query Run Registry Key
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"}'
+      
+  - name: "Query User Run Registry Key"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Query RunOnce Registry Key
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKCU", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"}'

