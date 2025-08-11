@@ -1,0 +1,116 @@
+name: "Registry Enumeration - Apollo"
+description: "Gather system information through passive registry queries"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+steps:
+  - name: "System Information"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"}'
+      
+  - name: "Installed Programs"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - System Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"}'
+      
+  - name: "Network Adapters"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Installed Programs
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\Network"}'
+      
+  - name: "Services Configuration"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Network Adapters
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Services"}'
+      
+  - name: "Security Providers"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Services Configuration
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\SecurityProviders"}'
+      
+  - name: "Environment Variables"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Security Providers
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"}'
+      
+  - name: "Timezone Information"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Environment Variables
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation"}'
+      
+  - name: "Recent Documents"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Timezone Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKCU", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs"}'
+
+  - name: "Network Drives"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Timezone Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKCU", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\MountPoints2"}'

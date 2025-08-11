@@ -1,0 +1,92 @@
+name: "Virtualization Detection - Apollo"
+description: "Detect virtualization and sandbox environments through registry keys"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+steps:
+  - name: "Check BIOS Information"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "HARDWARE\\DESCRIPTION\\System\\BIOS"}'
+      
+  - name: "Check System Information"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check BIOS Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"}'
+      
+  - name: "Check for VMware Files"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check System Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\VMware\\VMware Tools"}'
+      
+  - name: "Check for VirtualBox Files"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check for VMware Files
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\Oracle\\VirtualBox Guest Additions"}'
+      
+  - name: "Check for Hyper-V"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check for VirtualBox Files
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters"}'
+
+  - name: "Check Computer Name for VM Indicators"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check for Hyper-V
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName"}'
+      
+  - name: "Check MAC Address Prefixes"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Check Computer Name for VM Indicators
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKLM", "key": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002bE10318}"}'

@@ -1,0 +1,44 @@
+name: "File System Recon - Apollo"
+description: "Small File system reconnaissance using BOFs for shares and basic directory enumeration"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+steps:
+  - name: "NetworkShares"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{"computer":"localhost"}'
+      command_name: net_shares
+
+  - name: "Network Drives"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Timezone Information
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: reg_query
+      params: '{"hive": "HKCU", "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\MountPoints2"}'
+      
+  - name: "Check for SCCM Directory"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - Network Drives    
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Windows\\CCM"}'      

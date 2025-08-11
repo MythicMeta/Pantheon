@@ -1,0 +1,55 @@
+name: "Process Recon - Apollo"
+description: "Process reconnaissance using passive BOFs for process and module enumeration"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+# uses: https://github.com/trustedsec/CS-Situational-Awareness-BOF
+
+steps:
+  - name: "ProcessList"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ps
+
+  - name: "LoadedModules"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - ProcessList
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "listmods.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff
+
+  - name: "DriverSignatures"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    depends_on:
+      - LoadedModules
+    action_data:
+      callback_display_id: CALLBACK_ID
+      params: '{
+        "coff_name": "driversigs.x64.o",
+        "function": "go",
+        "arguments": [],
+        "serialized_arguments": "00000000"
+      }'
+      command_name: execute_coff

@@ -1,0 +1,116 @@
+name: "Development Environment Detection - Apollo"
+description: "Detect development tools and environments through filesystem analysis"
+trigger: manual
+trigger_data:
+  payload_types:
+    - apollo
+keywords:
+  - apollo_callback
+environment: {}
+
+steps:
+  - name: "Check for Visual Studio"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\Microsoft Visual Studio"}'
+
+  - name: "Check for Visual Studio Code"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for Visual Studio"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\Microsoft VS Code"}'
+
+  - name: "Check for Git"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for Visual Studio Code"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\Git"}'
+
+  - name: "Check for Python"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for Git"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\Python39"}'
+
+  - name: "Check for Node.js"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for Python"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\nodejs"}'
+
+  - name: "Check for Docker"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for Node.js"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\Docker"}'
+
+  - name: "Check for VMware Tools"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for Docker"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\VMware"}'
+
+  - name: "Check for JetBrains Tools"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for VMware Tools"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\Program Files\\JetBrains"}'
+
+  - name: "Check ProgramData for Dev Tools"
+    continue_on_error: true
+    inputs:
+      CALLBACK_ID: env.display_id
+    depends_on:
+      - "Check for JetBrains Tools"
+    action: task_create
+    action_data:
+      callback_display_id: CALLBACK_ID
+      command_name: ls
+      params: '{"path": "C:\\ProgramData"}'
