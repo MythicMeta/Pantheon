@@ -8,7 +8,7 @@ keywords:
   - apollo_callback
 environment: {}
 
-# uses: https://github.com/trustedsec/CS-Situational-Awareness-BOF
+# Repository: https://github.com/trustedsec/CS-Situational-Awareness-BOF
 
 steps:
   - name: "ProcessList"
@@ -52,4 +52,5 @@ steps:
         "arguments": [],
         "serialized_arguments": "00000000"
       }'
+
       command_name: execute_coff
