@@ -8,8 +8,7 @@ keywords:
   - apollo_callback
 environment: {}
 
-# uses: https://github.com/trustedsec/CS-Situational-Awareness-BOF, and listwamaccounts BOF from: https://github.com/Tw1sm/list-wam-accounts
-
+# Repository: https://github.com/trustedsec/CS-Situational-Awareness-BOF, https://github.com/Tw1sm/list-wam-accounts
 
 steps:
   - name: "Current Domain Context"
