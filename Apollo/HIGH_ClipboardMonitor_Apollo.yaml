@@ -7,7 +7,7 @@ keywords:
   - apollo_callback
 environment: {}
 
-# uses a forked GetClipboard BOF from https://github.com/atomiczsec/BOF_Collection/tree/master/Collection/Clipboard
+# Repository: https://github.com/atomiczsec/BOF_Collection/tree/master/Collection/Clipboard
 
 steps:
   - name: "GetClipboard"
@@ -23,4 +23,5 @@ steps:
           "coff_name": "GetClipboard.o",
           "function": "go",
           "serialized_arguments": "00000000"
+
         }
