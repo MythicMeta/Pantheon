@@ -8,7 +8,7 @@ keywords:
   - apollo_callback
 environment: {}
 
-#uses: https://github.com/sliverarmory/armory/
+# Repository: https://github.com/wavvs/nanorobeus
 
 steps:
 
@@ -25,4 +25,5 @@ steps:
 		"coff_arguments": [["z","dump"],["z","/all"],["z",""],["z",""],["z",""]],
         "serialized_arguments": "00000000"
       }'
+
       command_name: execute_coff

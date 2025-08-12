@@ -8,7 +8,7 @@ keywords:
   - apollo_callback
 environment: {}
 
-#uses: https://github.com/trustedsec/CS-Situational-Awareness-BOF
+# Repository: https://github.com/trustedsec/CS-Situational-Awareness-BOF
 
 steps:
   - name: "NetworkConnections"
